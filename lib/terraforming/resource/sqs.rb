@@ -21,6 +21,8 @@ module Terraforming
 
       def tfstate
         queues.inject({}) do |resources, queue|
+          policy = queue.key?("Policy") ? queue["Policy"] : ""
+          redrive_policy = queue.key?("RedrivePolicy") ? queue["RedrivePolicy"] : ""
           attributes = {
             "name"                       => module_name_of(queue),
             "id"                         => queue["QueueUrl"],
@@ -30,6 +32,8 @@ module Terraforming
             "max_message_size"           => queue["MaximumMessageSize"],
             "delay_seconds"              => queue["DelaySeconds"],
             "receive_wait_time_seconds"  => queue["ReceiveMessageWaitTimeSeconds"],
+            "policy"  => policy,
+            "redrive_policy"  => redrive_policy,
           }
           resources["aws_sqs_queue.#{module_name_of(queue)}"] = {
             "type" => "aws_sqs_queue",
