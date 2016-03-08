@@ -12,6 +12,13 @@ module Terraforming
           "https://sqs.ap-northeast-1.amazonaws.com/123456789012/test",
         ]
       end
+      let(:hoge_policy) do
+        "{\"Version\":\"2012-10-17\",\"Id\":\"arn:aws:sqs:ap-northeast-1:123456789012:hoge/SQSDefaultPolicy\",\"Statement\":[{\"Sid\":\"Sid1234567890123\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"SQS:*\",\"Resource\":\"arn:aws:sqs:ap-northeast-1:123456789012:hoge\"}]}"
+      end
+
+      let(:hoge_redrive_policy) do
+        "{\"deadLetterTargetArn\":\"arn:aws:sqs:ap-northeast-1:123456789012:hoge_redrive\",\"maxReceiveCount\":10}"
+      end
 
       let(:attributes) do
         {
@@ -26,6 +33,8 @@ module Terraforming
           "MessageRetentionPeriod"                => "345600",
           "DelaySeconds"                          => "10",
           "ReceiveMessageWaitTimeSeconds"         => "10",
+          "Policy"                                => hoge_policy,
+          "RedrivePolicy"                         => hoge_redrive_policy,
         }
       end
 
@@ -44,6 +53,27 @@ resource "aws_sqs_queue" "test" {
     max_message_size           = 262144
     delay_seconds              = 10
     receive_wait_time_seconds  = 10
+    policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Id": "arn:aws:sqs:ap-northeast-1:123456789012:hoge/SQSDefaultPolicy",
+  "Statement": [
+    {
+      "Sid": "Sid1234567890123",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "SQS:*",
+      "Resource": "arn:aws:sqs:ap-northeast-1:123456789012:hoge"
+    }
+  ]
+}
+POLICY
+    redrive_policy = <<POLICY
+{
+  "deadLetterTargetArn": "arn:aws:sqs:ap-northeast-1:123456789012:hoge_redrive",
+  "maxReceiveCount": 10
+}
+POLICY
 }
 
         EOS
@@ -66,6 +96,8 @@ resource "aws_sqs_queue" "test" {
                   "max_message_size"           => "262144",
                   "delay_seconds"              => "10",
                   "receive_wait_time_seconds"  => "10",
+                  "policy"  => "{\"Version\":\"2012-10-17\",\"Id\":\"arn:aws:sqs:ap-northeast-1:123456789012:hoge/SQSDefaultPolicy\",\"Statement\":[{\"Sid\":\"Sid1234567890123\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"SQS:*\",\"Resource\":\"arn:aws:sqs:ap-northeast-1:123456789012:hoge\"}]}",
+                  "redrive_policy"  => "{\"deadLetterTargetArn\":\"arn:aws:sqs:ap-northeast-1:123456789012:hoge_redrive\",\"maxReceiveCount\":10}",
                 }
               }
             }
